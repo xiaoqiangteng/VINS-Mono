@@ -866,7 +866,7 @@ void Estimator::optimization()
     //2.把与当前要margin掉帧所有相关的残差项都加进来，IMU,vision
     //3.preMarginalize-> 调用Evaluate计算所有ResidualBlock的残差，parameter_block_data parameter_block_idx parameter_block_size是marinazation中存参数块的容器(unordered_map),key都是addr,
     //分别对应这些参数的data，在稀疏矩阵A中的index(要被margin掉的参数会被移到前面)，A中的大小
-    //4.Marginalize->多线程构造Hx=b的结构，H是边缘化后的结果，First Esitimate Jacobian,在边缘化X0处线性化
+    //4.Marginalize->多线程构造Hx=b的结构，H是边缘化后的结果，First Esitimate Jacobian,在X0处线性化
     //5.margin结束，调整参数块在下一次window中对应的位置（往前移一格），注意这里是指针，后面slideWindow中会赋新值，这里只是提前占座（知乎上有人问：https://www.zhihu.com/question/63754583/answer/259699612）
     if (marginalization_flag == MARGIN_OLD)
     {

@@ -107,6 +107,8 @@ void MarginalizationInfo::addResidualBlockInfo(ResidualBlockInfo *residual_block
     }
 }
 
+//调用Evaluate()计算各个部分的残差
+//参数块拷贝到parameter_block_data容器中
 void MarginalizationInfo::preMarginalize()
 {
     for (auto it : factors)
@@ -138,6 +140,7 @@ int MarginalizationInfo::globalSize(int size) const
     return size == 6 ? 7 : size;
 }
 
+//多线程构造边缘化矩阵H
 void* ThreadsConstructA(void* threadsstruct)
 {
     ThreadsStruct* p = ((ThreadsStruct*)threadsstruct);
@@ -171,6 +174,10 @@ void* ThreadsConstructA(void* threadsstruct)
     return threadsstruct;
 }
 
+//边缘化
+//多线程构造Hx=b的结构，H是边缘化后的结果（根据parameter_block_idx里面的标记）
+//使用Schur complement简化计算过程
+//First Esitimate Jacobian,在X0处线性化
 void MarginalizationInfo::marginalize()
 {
     int pos = 0;
@@ -336,6 +343,8 @@ MarginalizationFactor::MarginalizationFactor(MarginalizationInfo* _marginalizati
     set_num_residuals(marginalization_info->n);
 };
 
+//先验残差
+//1.根据FEJ，固定线性化的点，更新这里的residuals和Jacobian
 bool MarginalizationFactor::Evaluate(double const *const *parameters, double *residuals, double **jacobians) const
 {
     //printf("internal addr,%d, %d\n", (int)parameter_block_sizes().size(), num_residuals());
