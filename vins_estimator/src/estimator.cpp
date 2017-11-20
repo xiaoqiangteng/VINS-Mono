@@ -861,7 +861,7 @@ void Estimator::optimization()
     double2vector();
 
     TicToc t_whole_marginalization;
-    //margin部分，如果倒数第二帧是最新帧：
+    //margin部分，如果倒数第二帧是关键帧：
     //1.把之前的存的残差部分加进来
     //2.把与当前要margin掉帧所有相关的残差项都加进来，IMU,vision
     //3.preMarginalize-> 调用Evaluate计算所有ResidualBlock的残差，parameter_block_data parameter_block_idx parameter_block_size是marinazation中存参数块的容器(unordered_map),key都是addr,
