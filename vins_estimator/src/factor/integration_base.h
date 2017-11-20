@@ -35,6 +35,7 @@ class IntegrationBase
         propagate(dt, acc, gyr);
     }
 
+    //由于优化过程中Bias会更新，有时候需要根据新的bias重新计算预积分
     void repropagate(const Eigen::Vector3d &_linearized_ba, const Eigen::Vector3d &_linearized_bg)
     {
         sum_dt = 0.0;

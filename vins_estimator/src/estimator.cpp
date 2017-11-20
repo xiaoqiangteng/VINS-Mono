@@ -217,7 +217,8 @@ void Estimator::processImage(const map<int, vector<pair<int, Vector3d>>> &image,
 //2.选择跟最后一帧中有足够多特征点和视差的某一帧，利用五点法恢复相对旋转和平移量 恢复某两帧
 //3.sfm.construct 全局SFM 恢复滑动窗口的帧的位姿
 //4. 利用pnp恢复其他帧
-//5.视觉IMU数据对齐
+//5.开始初始化，视觉IMU数据对齐
+//6.给滑动窗口中要优化的变量一个合理的初始值以便进行非线性优化
 bool Estimator::initialStructure()
 {
     TicToc t_sfm;
@@ -378,6 +379,8 @@ bool Estimator::initialStructure()
 //Vs:世界坐标下的速度
 
 //vision IMU数据对齐
+//这里涉及的量有： 陀螺仪的Bias(加速度Bias这里没有处理) 速度V[0:n] 重力g 尺度s
+//更新了Bgs后，IMU测量量需要repropagate
 bool Estimator::visualInitialAlign()
 {
     TicToc t_g;
@@ -668,7 +671,10 @@ bool Estimator::failureDetection()
     return false;
 }
 
-
+//基于滑动窗口的紧耦合的非线性优化
+//1.添加要优化的变量 也就是滑动窗口的位置para_Pose[0:n] 速度和Bias para_SpeedBias[0:n]一共15个自由度，IMU的外参也可以加进来估计
+//2.添加残差，残差项分为4块 先验残差+IMU残差+视觉残差+闭环检测的残差
+//3.根据倒数第二帧是不是关键帧确定marginization的结果，下面有详细解释
 void Estimator::optimization()
 {
     ceres::Problem problem;
