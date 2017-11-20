@@ -51,6 +51,7 @@ class IntegrationBase
             propagate(dt_buf[i], acc_buf[i], gyr_buf[i]);
     }
 
+    //中值积分法，具体推导参考:https://www.zhihu.com/question/64381223/answer/255818747
     void midPointIntegration(double _dt, 
                             const Eigen::Vector3d &_acc_0, const Eigen::Vector3d &_gyr_0,
                             const Eigen::Vector3d &_acc_1, const Eigen::Vector3d &_gyr_1,
@@ -77,6 +78,7 @@ class IntegrationBase
             Vector3d a_1_x = _acc_1 - linearized_ba;
             Matrix3d R_w_x, R_a_0_x, R_a_1_x;
 
+            //skew matrix这里是对应的反对称矩阵
             R_w_x<<0, -w_x(2), w_x(1),
                 w_x(2), 0, -w_x(0),
                 -w_x(1), w_x(0), 0;
@@ -127,6 +129,8 @@ class IntegrationBase
 
     }
 
+    //积分计算两个关键帧之间IMU测量的变化量： 旋转delta_q 速度delta_v 位移delta_p，加速度的biaslinearized_ba 陀螺仪的Bias linearized_bg
+    //同时维护更新预积分的Jacobian和Covariance,计算优化时必要的参数
     void propagate(double _dt, const Eigen::Vector3d &_acc_1, const Eigen::Vector3d &_gyr_1)
     {
         dt = _dt;

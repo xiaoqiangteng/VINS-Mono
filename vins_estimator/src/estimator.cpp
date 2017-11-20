@@ -93,12 +93,17 @@ void Estimator::processIMU(double dt, const Vector3d &linear_acceleration, const
         angular_velocity_buf[frame_count].push_back(angular_velocity);
 
         int j = frame_count;         
+        //noise是zero mean Gassu，在这里忽略了
         Vector3d un_acc_0 = Rs[j] * (acc_0 - Bas[j]) - g;
+        //下面都采用的是中值积分的传播方式，noise被忽略了
         Vector3d un_gyr = 0.5 * (gyr_0 + angular_velocity) - Bgs[j];
+        //角度
         Rs[j] *= Utility::deltaQ(un_gyr * dt).toRotationMatrix();
         Vector3d un_acc_1 = Rs[j] * (linear_acceleration - Bas[j]) - g;
         Vector3d un_acc = 0.5 * (un_acc_0 + un_acc_1);
+        //位移
         Ps[j] += dt * Vs[j] + 0.5 * dt * dt * un_acc;
+        //速度
         Vs[j] += dt * un_acc;
     }
     acc_0 = linear_acceleration;
@@ -206,12 +211,18 @@ void Estimator::processImage(const map<int, vector<pair<int, Vector3d>>> &image,
     }
 }
 
+
 //视觉的结构初始化
+//1.确保IMU有足够的excitation
+//2.选择跟最后一帧中有足够多特征点和视差的某一帧，利用五点法恢复相对旋转和平移量 恢复某两帧
+//3.sfm.construct 全局SFM 恢复滑动窗口的帧的位姿
+//4. 利用pnp恢复其他帧
+//5.视觉IMU数据对齐
 bool Estimator::initialStructure()
 {
     TicToc t_sfm;
     //check imu observibility
-    //通过重力variance确保IMU有足够的excitation
+    //1.通过重力variance确保IMU有足够的excitation
     {
         map<double, ImageFrame>::iterator frame_it;
         Vector3d sum_g;
@@ -263,13 +274,13 @@ bool Estimator::initialStructure()
     Matrix3d relative_R;
     Vector3d relative_T;
     int l;
-    //选择跟最后一帧中有足够多特征点和视差的某一帧，利用五点法恢复相对旋转和平移量 
+    //2.选择跟最后一帧中有足够多特征点和视差的某一帧，利用五点法恢复相对旋转和平移量 
     if (!relativePose(relative_R, relative_T, l))
     {
         ROS_INFO("Not enough features or parallax; Move device around");
         return false;
     }
-    //全局SFM初始化全部初始帧中的相机位置和特征点空间3D位置 
+    //3.全局SFM初始化全部初始帧中的相机位置和特征点空间3D位置 
     GlobalSFM sfm;
     if(!sfm.construct(frame_count + 1, Q, T, l,
               relative_R, relative_T,
@@ -281,7 +292,7 @@ bool Estimator::initialStructure()
     }
 
     //solve pnp for all frame
-    //对于非滑动窗口的所有帧，提供一个初始的R,T，然后solve pnp求解pose
+    //4.对于非滑动窗口的所有帧，提供一个初始的R,T，然后solve pnp求解pose
     map<double, ImageFrame>::iterator frame_it;
     map<int, Vector3d>::iterator it;
     frame_it = all_image_frame.begin( );
@@ -365,6 +376,7 @@ bool Estimator::initialStructure()
 //Ps:世界坐标下的平移
 //Rs:世界坐标下的旋转
 //Vs:世界坐标下的速度
+
 //vision IMU数据对齐
 bool Estimator::visualInitialAlign()
 {

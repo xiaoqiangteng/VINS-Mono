@@ -112,7 +112,7 @@ void update()
 }
 
 /**
- * @brief 对其imu和图像数据进行初步对其，使得一副图像对应多组imu数据，并确保相邻图像对应时间戳内的所有IMU数据
+ * @brief 对其imu和图像数据进行初步对齐，使得一副图像对应多组imu数据，并确保相邻图像对应时间戳内的所有IMU数据
  *
  */
 std::vector<std::pair<std::vector<sensor_msgs::ImuConstPtr>, sensor_msgs::PointCloudConstPtr>>
@@ -192,6 +192,7 @@ void feature_callback(const sensor_msgs::PointCloudConstPtr &feature_msg)
     con.notify_one();
 }
 
+//发送IMU数据进行预积分
 void send_imu(const sensor_msgs::ImuConstPtr &imu_msg)
 {
     double t = imu_msg->header.stamp.toSec();
