@@ -256,7 +256,7 @@ int main(int argc, char **argv)
     for (int i = 0; i < NUM_OF_CAM; i++)
         trackerData[i].readIntrinsicParameter(CAM_NAMES[i]);
 
-    //鱼眼相机的mask,追踪时候回用到
+    //鱼眼相机的mask,追踪时候会用到
     if(FISHEYE)
     {
         for (int i = 0; i < NUM_OF_CAM; i++)
