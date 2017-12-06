@@ -37,7 +37,9 @@ void solveGyroscopeBias(map<double, ImageFrame> &all_image_frame, Vector3d* Bgs)
     }
 }
 
-
+//Algorithm 1 to find b1 b2
+//在半径为G的半球找到切面的一对正交基
+//求法跟论文不太一致，但是没影响
 MatrixXd TangentBasis(Vector3d &g0)
 {
     Vector3d b, c;
@@ -54,6 +56,8 @@ MatrixXd TangentBasis(Vector3d &g0)
 }
 
 //see V-B-3 in Paper
+//1.按照论文思路，重力向量是由重力大小所约束的，论文中使用半球加上半球切面来参数化重力
+//2.然后迭代求得w1,w2
 void RefineGravity(map<double, ImageFrame> &all_image_frame, Vector3d &g, VectorXd &x)
 {
     Vector3d g0 = g.normalized() * G.norm();

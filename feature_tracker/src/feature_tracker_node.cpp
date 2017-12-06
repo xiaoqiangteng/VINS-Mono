@@ -96,7 +96,7 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
             if (r_status[i])
             {
                 idx.push_back(i);
-
+                //undistortion  
                 Eigen::Vector3d tmp_p;
                 trackerData[0].m_camera->liftProjective(Eigen::Vector2d(trackerData[0].cur_pts[i].x, trackerData[0].cur_pts[i].y), tmp_p);
                 tmp_p.x() = FOCAL_LENGTH * tmp_p.x() / tmp_p.z() + COL / 2.0;

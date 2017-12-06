@@ -29,7 +29,7 @@ queue<int> optimize_posegraph_buf;
 queue<KeyFrame*> keyframe_buf;
 queue<RetriveData> retrive_data_buf;
 
-int sum_of_wait = 0;
+int sum_of_wait = 0;//这个变量没有使用
 
 std::mutex m_buf;
 std::mutex m_state;
